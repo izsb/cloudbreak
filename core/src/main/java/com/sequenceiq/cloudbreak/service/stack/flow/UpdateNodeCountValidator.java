@@ -3,6 +3,7 @@ package com.sequenceiq.cloudbreak.service.stack.flow;
 import static java.lang.String.format;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -238,5 +239,14 @@ public class UpdateNodeCountValidator {
         downscaleValidatorService.checkInstanceIsTheClusterManagerServerOrNot(metaData.getPublicIp(), metaData.getInstanceMetadataType());
         downscaleValidatorService.checkClusterInValidStatus(stack.getCluster());
         return metaData;
+    }
+
+    public void validateClouderaManagerLimitationForDownscale(Map<String, Integer> nodeCountByHostGroup) {
+        for (Map.Entry<String, Integer> hostgroupWithNodeCount : nodeCountByHostGroup.entrySet()) {
+            if (hostgroupWithNodeCount.getValue() <= 0) {
+                throw new BadRequestException("Cloudera Manager does not support lower node count than 1 for '" + hostgroupWithNodeCount.getKey() + "' " +
+                        "group.");
+            }
+        }
     }
 }
