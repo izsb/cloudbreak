@@ -3,6 +3,7 @@ package com.sequenceiq.cloudbreak.service.customconfigs;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -28,6 +29,7 @@ import com.sequenceiq.cloudbreak.domain.CustomConfigurationProperty;
 import com.sequenceiq.cloudbreak.domain.CustomConfigurations;
 import com.sequenceiq.cloudbreak.domain.stack.cluster.Cluster;
 import com.sequenceiq.cloudbreak.exception.CustomConfigurationsCreationException;
+import com.sequenceiq.cloudbreak.repository.CustomConfigurationPropertyRepository;
 import com.sequenceiq.cloudbreak.repository.CustomConfigurationsRepository;
 import com.sequenceiq.cloudbreak.service.cluster.ClusterService;
 import com.sequenceiq.cloudbreak.validation.CustomConfigurationsValidator;
@@ -39,6 +41,9 @@ public class CustomConfigurationsService implements ResourcePropertyProvider {
 
     @Inject
     private CustomConfigurationsRepository customConfigurationsRepository;
+
+    @Inject
+    private CustomConfigurationPropertyRepository customConfigurationPropertyRepository;
 
     @Inject
     private ClusterService clusterService;
@@ -84,8 +89,9 @@ public class CustomConfigurationsService implements ResourcePropertyProvider {
                         + " exists. Provide a different name"); });
         initializeCrnForCustomConfigs(customConfigurations, accountId);
         customConfigurations.setAccount(accountId);
-        customConfigurations.getConfigurations().forEach(config -> config.setCustomConfigs(customConfigurations));
-        customConfigurationsRepository.save(customConfigurations);
+        Set<CustomConfigurationProperty> configurationProperties = new HashSet<>(customConfigurations.getConfigurations());
+        configurationProperties.forEach(config -> config.setCustomConfigs(customConfigurations));
+        customConfigurationPropertyRepository.saveAll(configurationProperties);
         return customConfigurations;
     }
 
@@ -145,14 +151,14 @@ public class CustomConfigurationsService implements ResourcePropertyProvider {
     public CustomConfigurations deleteByCrn(String crn) {
         CustomConfigurations customConfigurationsByCrn = getByCrn(crn);
         prepareDeletion(customConfigurationsByCrn);
-        customConfigurationsRepository.deleteById(customConfigurationsByCrn.getId());
+        customConfigurationPropertyRepository.deleteAll(customConfigurationsByCrn.getConfigurations());
         return customConfigurationsByCrn;
     }
 
     public CustomConfigurations deleteByName(String name, String accountId) {
         CustomConfigurations customConfigurationsByName = getByName(name, accountId);
         prepareDeletion(customConfigurationsByName);
-        customConfigurationsRepository.deleteById(customConfigurationsByName.getId());
+        customConfigurationPropertyRepository.deleteAll(customConfigurationsByName.getConfigurations());
         return customConfigurationsByName;
     }
 

@@ -7,12 +7,14 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.mock;
 
+import java.util.ArrayList;
 import java.util.Optional;
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -26,6 +28,7 @@ import com.sequenceiq.cloudbreak.domain.CustomConfigurationProperty;
 import com.sequenceiq.cloudbreak.domain.CustomConfigurations;
 import com.sequenceiq.cloudbreak.domain.stack.cluster.Cluster;
 import com.sequenceiq.cloudbreak.exception.CustomConfigurationsCreationException;
+import com.sequenceiq.cloudbreak.repository.CustomConfigurationPropertyRepository;
 import com.sequenceiq.cloudbreak.repository.CustomConfigurationsRepository;
 import com.sequenceiq.cloudbreak.service.cluster.ClusterService;
 import com.sequenceiq.cloudbreak.validation.CustomConfigurationsValidator;
@@ -58,6 +61,9 @@ class CustomConfigurationsServiceTest {
     private CustomConfigurationsRepository customConfigurationsRepository;
 
     @Mock
+    private CustomConfigurationPropertyRepository customConfigurationPropertyRepository;
+
+    @Mock
     private ClusterService clusterService;
 
     @Mock
@@ -65,6 +71,9 @@ class CustomConfigurationsServiceTest {
 
     @Mock
     private RegionAwareCrnGenerator regionAwareCrnGenerator;
+
+    @Captor
+    private ArgumentCaptor<Set<CustomConfigurationProperty>> argumentCaptor;
 
     @InjectMocks
     private CustomConfigurationsService underTest;
@@ -91,10 +100,11 @@ class CustomConfigurationsServiceTest {
     @Test
     void testIfCustomConfigsAreBeingAddedCorrectly() {
         ThreadBasedUserCrnProvider.doAs(TEST_USER_CRN_1, () -> underTest.create(customConfigurations, TEST_ACCOUNT_ID_1));
-        ArgumentCaptor<CustomConfigurations> customConfigsArgumentCaptor = ArgumentCaptor.forClass(CustomConfigurations.class);
-        verify(customConfigurationsRepository).save(customConfigsArgumentCaptor.capture());
-        CustomConfigurations capturedValue = customConfigsArgumentCaptor.getValue();
-        assertEquals(customConfigurations, capturedValue);
+        verify(customConfigurationPropertyRepository).saveAll(argumentCaptor.capture());
+        Set<CustomConfigurationProperty> capturedValue = argumentCaptor.getValue();
+        Set<CustomConfigurationProperty> expectedValue = customConfigurations.getConfigurations();
+        assertEquals(expectedValue, capturedValue);
+        assertEquals(customConfigurations, new ArrayList<>(expectedValue).get(0).getCustomConfigs());
     }
 
     @Test
