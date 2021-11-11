@@ -93,5 +93,6 @@
   "structured_events/read": "structured_events/read",
   "iam/listAssignedResourceRoles": "iam/listAssignedResourceRoles",
   "environments/updateAzureEncryptionResources": "environments/write",
+  "environments/UpdateAwsDiskEncryptionParameters": "environments/write",
   "environments/changeFreeipaImageCatalog": "environments/write"
 }

@@ -30,6 +30,7 @@ import com.sequenceiq.environment.environment.dto.EnvironmentDtoConverter;
 import com.sequenceiq.environment.environment.dto.EnvironmentEditDto;
 import com.sequenceiq.environment.environment.dto.EnvironmentValidationDto;
 import com.sequenceiq.environment.environment.dto.SecurityAccessDto;
+import com.sequenceiq.environment.environment.dto.UpdateAwsDiskEncryptionParametersDto;
 import com.sequenceiq.environment.environment.dto.UpdateAzureResourceEncryptionDto;
 import com.sequenceiq.environment.environment.dto.telemetry.EnvironmentFeatures;
 import com.sequenceiq.environment.environment.dto.telemetry.EnvironmentTelemetry;
@@ -39,6 +40,7 @@ import com.sequenceiq.environment.environment.validation.EnvironmentValidatorSer
 import com.sequenceiq.environment.environment.validation.ValidationType;
 import com.sequenceiq.environment.network.NetworkService;
 import com.sequenceiq.environment.network.dao.domain.BaseNetwork;
+import com.sequenceiq.environment.parameter.dto.AwsDiskEncryptionParametersDto;
 import com.sequenceiq.environment.parameter.dto.AzureResourceEncryptionParametersDto;
 import com.sequenceiq.environment.parameter.dto.ParametersDto;
 import com.sequenceiq.environment.parameters.dao.domain.AwsParameters;
@@ -127,6 +129,15 @@ public class EnvironmentModificationService {
         return updateAzureResourceEncryptionParameters(accountId, crn, dto.getAzureResourceEncryptionParametersDto(), environment);
     }
 
+    public EnvironmentDto updateAwsDiskEncryptionParametersByEnvironmentName(String accountId, String environmentName,
+            UpdateAwsDiskEncryptionParametersDto dto) {
+        Environment environment = environmentService
+                .findByNameAndAccountIdAndArchivedIsFalse(environmentName, accountId)
+                .orElseThrow(() -> new NotFoundException(String.format("No environment found with name '%s'", environmentName)));
+        return updateAwsDisk
+
+    }
+
     public EnvironmentDto changeTelemetryFeaturesByEnvironmentName(String accountId, String environmentName,
             EnvironmentFeatures features) {
         Environment environment = environmentService
@@ -170,6 +181,30 @@ public class EnvironmentModificationService {
         return environmentDtoConverter.environmentToDto(saved);
     }
 
+    private EnvironmentDto updateAwsDiskEncryptionParameters(String accountId, String environmentName, AwsDiskEncryptionParametersDto dto,
+            Environment environment) {
+        ValidationResult validateKey = environmentService.getValidatorService().validateEncryptionKeyArn(dto.getEncryptionKeyArn(),
+                accountId);
+        if (!validateKey.hasError()) {
+            AzureParameters azureParameters = (AzureParameters) environment.getParameters();
+            azureParameters.setEncryptionKeyUrl(dto.getEncryptionKeyUrl());
+            azureParameters.setEncryptionKeyResourceGroupName(dto.getEncryptionKeyResourceGroupName());
+            //creating the DES
+            try {
+                CreatedDiskEncryptionSet createdDiskEncryptionSet = environmentEncryptionService.createEncryptionResources(
+                        environmentDtoConverter.environmentToDto(environment));
+                azureParameters.setDiskEncryptionSetId(createdDiskEncryptionSet.getDiskEncryptionSetId());
+            } catch (Exception e) {
+                throw new BadRequestException(e);
+            }
+            LOGGER.debug("Successfully created the Disk encryption set for the environment {}.", environmentName);
+        } else {
+            throw new BadRequestException(validateKey.getFormattedErrors());
+        }
+        Environment saved = environmentService.save(environment);
+        return environmentDtoConverter.environmentToDto(saved);
+    }
+
     private EnvironmentDto updateAzureResourceEncryptionParameters(String accountId, String environmentName, AzureResourceEncryptionParametersDto dto,
             Environment environment) {
         ValidationResult validateKey = environmentService.getValidatorService().validateEncryptionKeyUrl(dto.getEncryptionKeyUrl(),
@@ -193,6 +228,7 @@ public class EnvironmentModificationService {
         Environment saved = environmentService.save(environment);
         return environmentDtoConverter.environmentToDto(saved);
     }
+
 
     private EnvironmentDto changeTelemetryFeatures(EnvironmentFeatures features, Environment environment) {
         EnvironmentTelemetry telemetry = environment.getTelemetry();
