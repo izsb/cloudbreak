@@ -26,6 +26,8 @@ import com.sequenceiq.environment.environment.flow.start.event.EnvStartEvent;
 import com.sequenceiq.environment.environment.flow.start.event.EnvStartStateSelectors;
 import com.sequenceiq.environment.environment.flow.stop.event.EnvStopEvent;
 import com.sequenceiq.environment.environment.flow.stop.event.EnvStopStateSelectors;
+import com.sequenceiq.environment.environment.flow.upgrade.ccm.event.UpgradeCcmEvent;
+import com.sequenceiq.environment.environment.flow.upgrade.ccm.event.UpgradeCcmStateSelectors;
 import com.sequenceiq.environment.environment.service.stack.StackService;
 import com.sequenceiq.flow.core.FlowConstants;
 import com.sequenceiq.flow.reactor.api.event.EventSender;
@@ -164,8 +166,16 @@ public class EnvironmentReactorFlowManager {
         eventSender.sendEvent(loadBalancerUpdateEvent, new Event.Headers(getFlowTriggerUsercrn(userCrn)));
     }
 
-    public void triggerCcmUpgradeFlow(EnvironmentDto environment) {
+    public void triggerCcmUpgradeFlow(EnvironmentDto environment, String userCrn) {
         LOGGER.info("Environment CCM upgrade flow triggered for environment {}", environment.getName());
-        // TODO in CB-14568
+        UpgradeCcmEvent upgradeCcmEvent = UpgradeCcmEvent.builder()
+                .withAccepted(new Promise<>())
+                .withResourceCrn(environment.getResourceCrn())
+                .withResourceId(environment.getId())
+                .withResourceName(environment.getName())
+                .withSelector(UpgradeCcmStateSelectors.UPGRADE_CCM_VALIDATION_EVENT.selector())
+                .build();
+        eventSender.sendEvent(upgradeCcmEvent, new Event.Headers(getFlowTriggerUsercrn(userCrn)));
+        LOGGER.debug("Environment CCM upgrade flow trigger event sent for environment {}", environment.getName());
     }
 }
