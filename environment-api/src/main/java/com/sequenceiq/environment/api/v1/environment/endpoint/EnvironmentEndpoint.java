@@ -126,7 +126,8 @@ public interface EnvironmentEndpoint {
     @PUT
     @Path("/name/{name}/update_aws_disk_encryption_parameters")
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(value = EnvironmentOpDescription.UPDATE_AWS_DISK_ENCRYPTION_PARAMETERS_BY_NAME, produces = MediaType.APPLICATION_JSON, notes = ENVIRONMENT_NOTES,
+    @ApiOperation(value = EnvironmentOpDescription.UPDATE_AWS_DISK_ENCRYPTION_PARAMETERS_BY_NAME,
+            produces = MediaType.APPLICATION_JSON, notes = ENVIRONMENT_NOTES,
         nickname = "UpdateAwsDiskEncryptionParametersV1")
     DetailedEnvironmentResponse updateAwsDiskEncryptionParametersByEnvironmentName(@PathParam("name") String environmentName,
             @Valid UpdateAwsDiskEncryptionParametersRequest request);
@@ -197,7 +198,8 @@ public interface EnvironmentEndpoint {
     @PUT
     @Path("/crn/{crn}/update_aws_disk_encryption_parameters")
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(value = EnvironmentOpDescription.UPDATE_AWS_DISK_ENCRYPTION_PARAMETERS_BY_CRN, produces = MediaType.APPLICATION_JSON, notes = ENVIRONMENT_NOTES,
+    @ApiOperation(value = EnvironmentOpDescription.UPDATE_AWS_DISK_ENCRYPTION_PARAMETERS_BY_CRN,
+            produces = MediaType.APPLICATION_JSON, notes = ENVIRONMENT_NOTES,
         nickname = "updateAwsDiskEncryptionParametersByEnvironmentCrn")
     DetailedEnvironmentResponse updateAwsDiskEncryptionParametersByEnvironmentCrn(@ValidCrn(resource = CrnResourceDescriptor.ENVIRONMENT)
     @PathParam("crn") String crn, @Valid UpdateAwsDiskEncryptionParametersRequest request);
