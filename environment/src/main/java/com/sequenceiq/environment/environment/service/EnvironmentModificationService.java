@@ -134,8 +134,14 @@ public class EnvironmentModificationService {
         Environment environment = environmentService
                 .findByNameAndAccountIdAndArchivedIsFalse(environmentName, accountId)
                 .orElseThrow(() -> new NotFoundException(String.format("No environment found with name '%s'", environmentName)));
-        return updateAwsDisk
+        return updateAwsDiskEncryptionParameters(accountId, environmentName, dto.getAwsDiskEncryptionParametersDto(), environment);
+    }
 
+    public EnvironmentDto updateAwsDiskEncryptionParametersByEnvironmentCrn(String accountId, String crn, UpdateAwsDiskEncryptionParametersDto dto) {
+        Environment environment = environmentService
+                .findByResourceCrnAndAccountIdAndArchivedIsFalse(crn, accountId)
+                .orElseThrow(() -> new NotFoundException(String.format("No environment found with CRN '%s'", crn)));
+        return updateAwsDiskEncryptionParameters(accountId, crn, dto.getAwsDiskEncryptionParametersDto(), environment);
     }
 
     public EnvironmentDto changeTelemetryFeaturesByEnvironmentName(String accountId, String environmentName,
@@ -183,27 +189,18 @@ public class EnvironmentModificationService {
 
     private EnvironmentDto updateAwsDiskEncryptionParameters(String accountId, String environmentName, AwsDiskEncryptionParametersDto dto,
             Environment environment) {
-        ValidationResult validateKey = environmentService.getValidatorService().validateEncryptionKeyArn(dto.getEncryptionKeyArn(),
-                accountId);
-        if (!validateKey.hasError()) {
-            AzureParameters azureParameters = (AzureParameters) environment.getParameters();
-            azureParameters.setEncryptionKeyUrl(dto.getEncryptionKeyUrl());
-            azureParameters.setEncryptionKeyResourceGroupName(dto.getEncryptionKeyResourceGroupName());
-            //creating the DES
-            try {
-                CreatedDiskEncryptionSet createdDiskEncryptionSet = environmentEncryptionService.createEncryptionResources(
-                        environmentDtoConverter.environmentToDto(environment));
-                azureParameters.setDiskEncryptionSetId(createdDiskEncryptionSet.getDiskEncryptionSetId());
-            } catch (Exception e) {
-                throw new BadRequestException(e);
+            ValidationResult validateKey = environmentService.getValidatorService().validateEncryptionKeyArn(dto.getEncryptionKeyArn(),
+                    accountId);
+            if (!validateKey.hasError()) {
+                AwsParameters awsParameters = (AwsParameters) environment.getParameters();
+                awsParameters.setEncryptionKeyArn(dto.getEncryptionKeyArn());
+                LOGGER.debug("Successfully updated the encryption key arn fot the environment {}.", environmentName);
+            } else {
+                throw new BadRequestException(validateKey.getFormattedErrors());
             }
-            LOGGER.debug("Successfully created the Disk encryption set for the environment {}.", environmentName);
-        } else {
-            throw new BadRequestException(validateKey.getFormattedErrors());
+            Environment saved = environmentService.save(environment);
+            return environmentDtoConverter.environmentToDto(saved);
         }
-        Environment saved = environmentService.save(environment);
-        return environmentDtoConverter.environmentToDto(saved);
-    }
 
     private EnvironmentDto updateAzureResourceEncryptionParameters(String accountId, String environmentName, AzureResourceEncryptionParametersDto dto,
             Environment environment) {
