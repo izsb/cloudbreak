@@ -26,6 +26,7 @@ import org.springframework.stereotype.Component;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.gs.collections.impl.factory.Sets;
+import com.sequenceiq.cloudbreak.api.endpoint.v4.common.DetailedStackStatus;
 import com.sequenceiq.cloudbreak.api.endpoint.v4.common.Status;
 import com.sequenceiq.cloudbreak.auth.ThreadBasedUserCrnProvider;
 import com.sequenceiq.cloudbreak.auth.crn.Crn;
@@ -269,9 +270,9 @@ public class StackStatusCheckerJob extends StatusCheckerJob {
         clusterService.updateClusterCertExpirationState(stack.getCluster(), hostCertExpiring);
         clusterOperationService.reportHealthChange(stack.getResourceCrn(), newFailedNodeNamesWithReason, newHealthyHostNames);
         if (!failedInstances.isEmpty()) {
-            clusterService.updateClusterStatusByStackId(stack.getId(), Status.NODE_FAILURE);
-        } else if (statesFromAvailableAllowed().contains(stack.getCluster().getStatus())) {
-            clusterService.updateClusterStatusByStackId(stack.getId(), Status.AVAILABLE);
+            clusterService.updateClusterStatusByStackId(stack.getId(), DetailedStackStatus.NODE_FAILURE);
+        } else if (statesFromAvailableAllowed().contains(stack.getStatus())) {
+            clusterService.updateClusterStatusByStackId(stack.getId(), DetailedStackStatus.AVAILABLE);
         }
     }
 
@@ -285,7 +286,6 @@ public class StackStatusCheckerJob extends StatusCheckerJob {
     private EnumSet<Status> statesFromAvailableAllowed() {
         return EnumSet.of(
                 Status.AMBIGUOUS,
-                Status.UNREACHABLE,
                 Status.NODE_FAILURE,
                 Status.STOPPED,
                 Status.START_FAILED,
