@@ -56,6 +56,7 @@ public class StructuredEventToClusterShapeConverter {
 
         if (blueprintDetails != null) {
             cdpClusterShape.setClusterTemplateName(defaultIfEmpty(blueprintDetails.getName(), ""));
+            cdpClusterShape.setClusterTemplateDetails(defaultIfEmpty(blueprintDetails.getBlueprintJson(), ""));
         }
 
         if (stackDetails != null) {
