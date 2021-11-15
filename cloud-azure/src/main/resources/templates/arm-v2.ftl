@@ -496,6 +496,7 @@
                                 "name": "${rule.name}",
                                 "properties": {
                                     "backendAddressPool": {
+                                        <!-- The backend address pool should be associated with virtual machines in the Microsoft.Compute/virtualMachines block -->
                                         "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', '${loadBalancer.name}', '${rule.groupName}-pool')]"
                                     },
                                     "backendPort": ${rule.backendPort},
