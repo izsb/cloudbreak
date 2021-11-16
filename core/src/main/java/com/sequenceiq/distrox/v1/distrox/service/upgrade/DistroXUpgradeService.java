@@ -17,8 +17,10 @@ import com.sequenceiq.cloudbreak.api.endpoint.v4.stacks.response.upgrade.Upgrade
 import com.sequenceiq.cloudbreak.auth.ClouderaManagerLicenseProvider;
 import com.sequenceiq.cloudbreak.auth.JsonCMLicense;
 import com.sequenceiq.cloudbreak.auth.PaywallAccessChecker;
+import com.sequenceiq.cloudbreak.auth.ThreadBasedUserCrnProvider;
 import com.sequenceiq.cloudbreak.auth.altus.EntitlementService;
 import com.sequenceiq.cloudbreak.auth.crn.Crn;
+import com.sequenceiq.cloudbreak.cloud.aws.common.AwsConstants;
 import com.sequenceiq.cloudbreak.common.exception.BadRequestException;
 import com.sequenceiq.cloudbreak.core.flow2.service.ReactorFlowManager;
 import com.sequenceiq.cloudbreak.domain.stack.Stack;
@@ -77,10 +79,22 @@ public class DistroXUpgradeService {
         boolean lockComponents = request.getLockComponents() != null ? request.getLockComponents() : isComponentsLocked(stack, image);
         validateOsUpgradeEntitled(lockComponents, request);
         boolean replaceVms = determineReplaceVmsParam(upgradeV4Response, lockComponents, stack);
-        FlowIdentifier flowIdentifier = reactorFlowManager.triggerDistroXUpgrade(stack.getId(), imageChangeDto, replaceVms, lockComponents);
+        String upgradeVariant = calculateUpgradeVariant(stack);
+        FlowIdentifier flowIdentifier = reactorFlowManager.triggerDistroXUpgrade(stack.getId(), imageChangeDto, replaceVms, lockComponents, upgradeVariant);
         UpgradeV4Response response = new UpgradeV4Response("Upgrade started with Image: " + image.getImageId(), flowIdentifier);
         response.setReplaceVms(replaceVms);
         return response;
+    }
+
+    private String calculateUpgradeVariant(Stack stack) {
+        String variant = stack.getPlatformVariant();
+        boolean migrationEnable = entitlementService.awsVariantMigrationEnable(ThreadBasedUserCrnProvider.getAccountId());
+        if (migrationEnable) {
+            if (AwsConstants.AwsVariant.AWS_VARIANT.variant().value().equals(variant)) {
+                variant = AwsConstants.AwsVariant.AWS_NATIVE_VARIANT.variant().value();
+            }
+        }
+        return variant;
     }
 
     private ImageChangeDto createImageChangeDto(NameOrCrn cluster, Long workspaceId, ImageInfoV4Response image) {

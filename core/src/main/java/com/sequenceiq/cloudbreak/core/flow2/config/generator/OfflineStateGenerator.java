@@ -64,6 +64,7 @@ import com.sequenceiq.cloudbreak.domain.projection.StackCrnView;
 import com.sequenceiq.cloudbreak.domain.projection.StackIdView;
 import com.sequenceiq.cloudbreak.domain.projection.StackImageView;
 import com.sequenceiq.cloudbreak.domain.projection.StackListItem;
+import com.sequenceiq.cloudbreak.domain.projection.StackPlatformVariantView;
 import com.sequenceiq.cloudbreak.domain.projection.StackStatusView;
 import com.sequenceiq.cloudbreak.domain.projection.StackTtlView;
 import com.sequenceiq.cloudbreak.domain.stack.Stack;
@@ -515,6 +516,11 @@ public class OfflineStateGenerator {
         @Override
         public int setCcmV2AgentCrnByStackId(Long id, String ccmV2Configs) {
             return 0;
+        }
+
+        @Override
+        public StackPlatformVariantView findPlatformVariantAndCloudPlatformById(Long id) {
+            return null;
         }
 
         @Override

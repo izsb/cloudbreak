@@ -34,7 +34,7 @@ public class StackRepairFlowEventChainFactory implements FlowEventChainFactory<S
             List<String> instances = unhealthyInstances.getInstancesForGroup(hostGroupName);
             flowEventChain.add(
                     new StackAndClusterUpscaleTriggerEvent(fullUpscaleTriggerEvent, event.getResourceId(), hostGroupName,
-                            instances.size(), ScalingType.UPSCALE_TOGETHER, NetworkScaleDetails.getEmpty()));
+                            instances.size(), ScalingType.UPSCALE_TOGETHER, NetworkScaleDetails.getEmpty(), null));
         }
         return new FlowTriggerEventQueue(getName(), event, flowEventChain);
     }

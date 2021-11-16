@@ -11,9 +11,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 
+import com.amazonaws.ClientConfiguration;
 import com.amazonaws.SdkClientException;
 import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import com.amazonaws.client.builder.AwsClientBuilder;
+import com.amazonaws.retry.PredefinedRetryPolicies;
 import com.amazonaws.services.securitytoken.AWSSecurityTokenService;
 import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClientBuilder;
 import com.amazonaws.services.securitytoken.model.AssumeRoleRequest;
@@ -29,6 +31,10 @@ public class AwsSessionCredentialClient {
     private static final Logger LOGGER = LoggerFactory.getLogger(AwsSessionCredentialClient.class);
 
     private static final int DEFAULT_SESSION_CREDENTIALS_DURATION = 3600;
+
+    private static final int MAX_CLIENT_RETRIES = 30;
+
+    private static final int MAX_CONSECUTIVE_RETRIES_BEFORE_THROTTLING = 200;
 
     @Value("${cb.aws.external.id:}")
     private String deprecatedExternalId;
@@ -91,6 +97,7 @@ public class AwsSessionCredentialClient {
     private AWSSecurityTokenService awsSecurityTokenServiceClient(AwsCredentialView awsCredential) {
         String defaultZone = awsDefaultZoneProvider.getDefaultZone(awsCredential);
         return AWSSecurityTokenServiceClientBuilder.standard()
+                .withClientConfiguration(getDefaultClientConfiguration())
                 .withEndpointConfiguration(getEndpointConfiguration(defaultZone))
                 .withCredentials(DefaultAWSCredentialsProviderChain.getInstance())
                 .build();
@@ -99,6 +106,13 @@ public class AwsSessionCredentialClient {
     private AwsClientBuilder.EndpointConfiguration getEndpointConfiguration(String defaultZone) {
         return new AwsClientBuilder
                 .EndpointConfiguration(String.format("https://sts.%s.amazonaws.com", defaultZone), defaultZone);
+    }
+
+    private ClientConfiguration getDefaultClientConfiguration() {
+        return new ClientConfiguration()
+                .withThrottledRetries(true)
+                .withMaxConsecutiveRetriesBeforeThrottling(MAX_CONSECUTIVE_RETRIES_BEFORE_THROTTLING)
+                .withRetryPolicy(PredefinedRetryPolicies.getDefaultRetryPolicyWithCustomMaxRetries(MAX_CLIENT_RETRIES));
     }
 
     @Override

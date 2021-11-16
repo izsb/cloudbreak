@@ -2,7 +2,6 @@ package com.sequenceiq.cloudbreak.cloud.aws.common.resource.volume;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.Future;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -83,21 +82,22 @@ public class AwsAttachmentResourceBuilder extends AbstractAwsComputeBuilder {
         AmazonEc2Client client = getAmazonEc2Client(auth);
 
         VolumeSetAttributes volumeSetAttributes = volumeSet.getParameter(CloudResource.ATTRIBUTES, VolumeSetAttributes.class);
-        LOGGER.debug("Creating attach volume requests and submitting to executor for stack '{}',   group '{}'",
+        LOGGER.debug("Creating attach volume requests and submitting to executor for stack '{}', group '{}'",
                 auth.getCloudContext().getName(), group.getName());
-        List<Future<?>> futures = volumeSetAttributes.getVolumes().stream()
+       volumeSetAttributes.getVolumes().stream()
                 .filter(volume -> !StringUtils.equals(AwsDiskType.Ephemeral.value(), volume.getType()))
                 .map(volume -> new AttachVolumeRequest()
                         .withInstanceId(instance.getInstanceId())
                         .withVolumeId(volume.getId())
                         .withDevice(volume.getDevice()))
-                .map(request -> intermediateBuilderExecutor.submit(() -> client.attachVolume(request)))
+//                .map(request -> intermediateBuilderExecutor.submit(() -> client.attachVolume(request)))
+                .map(request -> client.attachVolume(request))
                 .collect(Collectors.toList());
 
         LOGGER.debug("Waiting for attach volumes request");
-        for (Future<?> future : futures) {
-            future.get();
-        }
+//        for (Future<?> future : futures) {
+//            future.get();
+//        }
         LOGGER.debug("Attach volume requests sent");
 
         volumeSet.setInstanceId(instance.getInstanceId());

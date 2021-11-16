@@ -10,18 +10,20 @@ public class StackDownscaleTriggerEvent extends StackScaleTriggerEvent {
 
     private final Set<Long> privateIds;
 
-    public StackDownscaleTriggerEvent(String selector, Long stackId, String hostGroup, Integer adjustment) {
-        super(selector, stackId, hostGroup, adjustment);
+    public StackDownscaleTriggerEvent(String selector, Long stackId, String hostGroup, Integer adjustment, String triggeredStackVariant) {
+        super(selector, stackId, hostGroup, adjustment, triggeredStackVariant);
         privateIds = null;
     }
 
-    public StackDownscaleTriggerEvent(String selector, Long stackId, String instanceGroup, Set<Long> privateIds) {
-        super(selector, stackId, instanceGroup, null);
+    public StackDownscaleTriggerEvent(String selector, Long stackId, String instanceGroup, Set<Long> privateIds,
+            String triggeredStackVariant) {
+        super(selector, stackId, instanceGroup, null, triggeredStackVariant);
         this.privateIds = privateIds;
     }
 
-    public StackDownscaleTriggerEvent(String selector, Long stackId, String instanceGroup, Set<Long> privateIds, Promise<AcceptResult> accepted) {
-        super(selector, stackId, instanceGroup, null, accepted);
+    public StackDownscaleTriggerEvent(String selector, Long stackId, String instanceGroup, Set<Long> privateIds, String triggeredStackVariant,
+            Promise<AcceptResult> accepted) {
+        super(selector, stackId, instanceGroup, null, triggeredStackVariant, accepted);
         this.privateIds = privateIds;
     }
 

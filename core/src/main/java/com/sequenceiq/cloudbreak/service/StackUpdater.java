@@ -1,11 +1,15 @@
 package com.sequenceiq.cloudbreak.service;
 
+import static org.slf4j.LoggerFactory.getLogger;
+
 import javax.inject.Inject;
 
+import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
 import com.sequenceiq.cloudbreak.api.endpoint.v4.common.DetailedStackStatus;
 import com.sequenceiq.cloudbreak.api.endpoint.v4.common.Status;
+import com.sequenceiq.cloudbreak.cloud.model.CloudPlatformVariant;
 import com.sequenceiq.cloudbreak.cloud.store.InMemoryStateStore;
 import com.sequenceiq.cloudbreak.converter.scheduler.StatusToPollGroupConverter;
 import com.sequenceiq.cloudbreak.domain.SecurityConfig;
@@ -16,6 +20,8 @@ import com.sequenceiq.cloudbreak.service.stack.StackService;
 
 @Component
 public class StackUpdater {
+
+    private static final Logger LOGGER = getLogger(StackUpdater.class);
 
     @Inject
     private StackService stackService;
@@ -69,4 +75,14 @@ public class StackUpdater {
         return stack;
     }
 
+    public void updateVariant(Long resourceId, String variant) {
+        CloudPlatformVariant stackVariant = stackService.getPlatformVariantByStackId(resourceId);
+        if (!variant.equals(stackVariant.getVariant().value())) {
+            Stack stack = stackService.get(resourceId);
+            stack.setPlatformVariant(variant);
+            stackService.save(stack);
+        } else {
+            LOGGER.info("The variant was already set to {}", variant);
+        }
+    }
 }

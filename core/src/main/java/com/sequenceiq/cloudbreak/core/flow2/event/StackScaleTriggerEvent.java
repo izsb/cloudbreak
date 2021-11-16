@@ -17,34 +17,39 @@ public class StackScaleTriggerEvent extends StackEvent {
 
     private final Set<String> hostNames;
 
+    private final String triggeredStackVariant;
+
     private boolean repair;
 
     private NetworkScaleDetails networkScaleDetails;
 
-    public StackScaleTriggerEvent(String selector, Long stackId, String instanceGroup, Integer adjustment) {
-        this(selector, stackId, instanceGroup, adjustment, Collections.emptySet(), NetworkScaleDetails.getEmpty());
+    public StackScaleTriggerEvent(String selector, Long stackId, String instanceGroup, Integer adjustment, String triggeredStackVariant) {
+        this(selector, stackId, instanceGroup, adjustment, Collections.emptySet(), NetworkScaleDetails.getEmpty(), triggeredStackVariant);
     }
 
-    public StackScaleTriggerEvent(String selector, Long stackId, String instanceGroup, Integer adjustment, Promise<AcceptResult> accepted) {
-        this(selector, stackId, instanceGroup, adjustment, Collections.emptySet(), accepted);
+    public StackScaleTriggerEvent(String selector, Long stackId, String instanceGroup, Integer adjustment,
+            String triggeredStackVariant, Promise<AcceptResult> accepted) {
+        this(selector, stackId, instanceGroup, adjustment, Collections.emptySet(), triggeredStackVariant, accepted);
     }
 
     public StackScaleTriggerEvent(String selector, Long stackId, String instanceGroup, Integer adjustment, Set<String> hostNames,
-            NetworkScaleDetails networkScaleDetails) {
+            NetworkScaleDetails networkScaleDetails, String triggeredStackVariant) {
         super(selector, stackId);
         this.instanceGroup = instanceGroup;
         this.adjustment = adjustment;
         this.hostNames = hostNames;
         this.networkScaleDetails = networkScaleDetails;
+        this.triggeredStackVariant = triggeredStackVariant;
     }
 
     public StackScaleTriggerEvent(String selector, Long stackId, String instanceGroup, Integer adjustment, Set<String> hostNames,
-            Promise<AcceptResult> accepted) {
+            String triggeredStackVariant, Promise<AcceptResult> accepted) {
         super(selector, stackId, accepted);
         this.instanceGroup = instanceGroup;
         this.adjustment = adjustment;
         this.hostNames = hostNames;
         this.networkScaleDetails = new NetworkScaleDetails();
+        this.triggeredStackVariant = triggeredStackVariant;
     }
 
     public StackScaleTriggerEvent setRepair() {
@@ -70,5 +75,9 @@ public class StackScaleTriggerEvent extends StackEvent {
 
     public NetworkScaleDetails getNetworkScaleDetails() {
         return networkScaleDetails;
+    }
+
+    public String getTriggeredStackVariant() {
+        return triggeredStackVariant;
     }
 }

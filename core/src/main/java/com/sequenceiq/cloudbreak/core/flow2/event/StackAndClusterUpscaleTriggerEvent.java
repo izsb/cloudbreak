@@ -25,8 +25,8 @@ public class StackAndClusterUpscaleTriggerEvent extends StackScaleTriggerEvent {
     private final ClusterManagerType clusterManagerType;
 
     public StackAndClusterUpscaleTriggerEvent(String selector, Long stackId, String instanceGroup, Integer adjustment, ScalingType scalingType,
-            NetworkScaleDetails networkScaleDetails) {
-        super(selector, stackId, instanceGroup, adjustment, Collections.emptySet(), networkScaleDetails);
+            NetworkScaleDetails networkScaleDetails, String triggeredStackVariant) {
+        super(selector, stackId, instanceGroup, adjustment, Collections.emptySet(), networkScaleDetails, triggeredStackVariant);
         this.scalingType = scalingType;
         singleMasterGateway = false;
         kerberosSecured = false;
@@ -37,8 +37,8 @@ public class StackAndClusterUpscaleTriggerEvent extends StackScaleTriggerEvent {
 
     public StackAndClusterUpscaleTriggerEvent(String selector, Long stackId, String instanceGroup, Integer adjustment, ScalingType scalingType,
             Set<String> hostNames, boolean singlePrimaryGateway, boolean kerberosSecured, Promise<AcceptResult> accepted, boolean singleNodeCluster,
-            boolean restartServices, ClusterManagerType clusterManagerType) {
-        super(selector, stackId, instanceGroup, adjustment, hostNames, accepted);
+            boolean restartServices, ClusterManagerType clusterManagerType, String triggeredStackVariant) {
+        super(selector, stackId, instanceGroup, adjustment, hostNames, triggeredStackVariant, accepted);
         this.scalingType = scalingType;
         singleMasterGateway = singlePrimaryGateway;
         this.kerberosSecured = kerberosSecured;

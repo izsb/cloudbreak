@@ -1,5 +1,9 @@
 package com.sequenceiq.cloudbreak.cloud.aws.common.client;
 
+import static org.slf4j.LoggerFactory.getLogger;
+
+import org.slf4j.Logger;
+
 import com.amazonaws.services.ec2.AmazonEC2;
 import com.amazonaws.services.ec2.model.AllocateAddressRequest;
 import com.amazonaws.services.ec2.model.AllocateAddressResult;
@@ -80,6 +84,8 @@ import com.sequenceiq.cloudbreak.service.Retry;
 
 public class AmazonEc2Client extends AmazonClient {
 
+    private static final Logger LOGGER = getLogger(AmazonEc2Client.class);
+
     private final AmazonEC2 client;
 
     private final Retry retry;
@@ -110,7 +116,14 @@ public class AmazonEc2Client extends AmazonClient {
     }
 
     public AttachVolumeResult attachVolume(AttachVolumeRequest request) {
-        return retry.testWith2SecDelayMax15Times(() -> client.attachVolume(request));
+        return retry.testWith2SecDelayMax15Times(() -> {
+            try {
+                return retry.testWith2SecDelayMax15Times(() -> client.attachVolume(request));
+            } catch (Exception e) {
+                LOGGER.error("Cannot attach the volume of {} to {}", request.getVolumeId(), request.getInstanceId(), e);
+                throw e;
+            }
+        });
     }
 
     public DescribeRegionsResult describeRegions(DescribeRegionsRequest describeRegionsRequest) {

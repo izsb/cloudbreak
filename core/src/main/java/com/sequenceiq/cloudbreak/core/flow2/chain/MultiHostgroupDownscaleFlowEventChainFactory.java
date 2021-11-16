@@ -41,7 +41,7 @@ public class MultiHostgroupDownscaleFlowEventChainFactory implements FlowEventCh
             flowEventChain.add(cste);
             if (event.getScalingType() == ScalingType.DOWNSCALE_TOGETHER) {
                 StackScaleTriggerEvent sste;
-                sste = new StackDownscaleTriggerEvent(STACK_DOWNSCALE_EVENT.event(), event.getResourceId(), entry.getKey(), entry.getValue());
+                sste = new StackDownscaleTriggerEvent(STACK_DOWNSCALE_EVENT.event(), event.getResourceId(), entry.getKey(), entry.getValue(), null);
                 flowEventChain.add(sste);
             }
         }

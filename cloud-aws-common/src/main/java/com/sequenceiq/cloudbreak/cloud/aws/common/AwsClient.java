@@ -152,6 +152,7 @@ public abstract class AwsClient {
     public AmazonSecurityTokenServiceClient createSecurityTokenService(AwsCredentialView awsCredential, String region) {
         AWSSecurityTokenService client = proxy(com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClient.builder()
                 .withCredentials(getCredentialProvider(awsCredential))
+                .withClientConfiguration(getDefaultClientConfiguration())
                 .withRequestHandlers(new AwsTracingRequestHandler(tracer))
                 .withRegion(region)
                 .build(), awsCredential, region);
@@ -162,6 +163,7 @@ public abstract class AwsClient {
         String region = awsDefaultZoneProvider.getDefaultZone(awsCredential);
         AWSSecurityTokenService client = proxy(com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClient.builder()
                 .withCredentials(DefaultAWSCredentialsProviderChain.getInstance())
+                .withClientConfiguration(getDefaultClientConfiguration())
                 .withRequestHandlers(new AwsTracingRequestHandler(tracer))
                 .withRegion(region)
                 .build(), awsCredential, region);

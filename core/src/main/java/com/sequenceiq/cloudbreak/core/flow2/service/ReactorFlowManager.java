@@ -114,14 +114,14 @@ public class ReactorFlowManager {
         Acceptable stackAndClusterUpscaleTriggerEvent = new StackAndClusterUpscaleTriggerEvent(selector,
                 stackId, instanceGroupAdjustment.getInstanceGroup(), instanceGroupAdjustment.getScalingAdjustment(),
                 withClusterEvent ? ScalingType.UPSCALE_TOGETHER : ScalingType.UPSCALE_ONLY_STACK,
-                getStackNetworkScaleDetails(instanceGroupAdjustment));
+                getStackNetworkScaleDetails(instanceGroupAdjustment), null);
         return reactorNotifier.notify(stackId, selector, stackAndClusterUpscaleTriggerEvent);
     }
 
     public FlowIdentifier triggerStackDownscale(Long stackId, InstanceGroupAdjustmentV4Request instanceGroupAdjustment) {
         String selector = STACK_DOWNSCALE_EVENT.event();
         Acceptable stackScaleTriggerEvent = new StackDownscaleTriggerEvent(selector, stackId, instanceGroupAdjustment.getInstanceGroup(),
-                instanceGroupAdjustment.getScalingAdjustment());
+                instanceGroupAdjustment.getScalingAdjustment(), null);
         return reactorNotifier.notify(stackId, selector, stackScaleTriggerEvent);
     }
 
@@ -171,9 +171,10 @@ public class ReactorFlowManager {
         return reactorNotifier.notify(stackId, selector, new ClusterUpgradeTriggerEvent(selector, stackId, imageId));
     }
 
-    public FlowIdentifier triggerDistroXUpgrade(Long stackId, ImageChangeDto imageChangeDto, boolean replaceVms, boolean lockComponents) {
+    public FlowIdentifier triggerDistroXUpgrade(Long stackId, ImageChangeDto imageChangeDto, boolean replaceVms, boolean lockComponents, String variant) {
         String selector = FlowChainTriggers.DISTROX_CLUSTER_UPGRADE_CHAIN_TRIGGER_EVENT;
-        return reactorNotifier.notify(stackId, selector, new DistroXUpgradeTriggerEvent(selector, stackId, imageChangeDto, replaceVms, lockComponents));
+        return reactorNotifier.notify(stackId, selector, new DistroXUpgradeTriggerEvent(selector, stackId, imageChangeDto, replaceVms, lockComponents,
+                variant));
     }
 
     public FlowIdentifier triggerDatalakeClusterRecovery(Long stackId) {

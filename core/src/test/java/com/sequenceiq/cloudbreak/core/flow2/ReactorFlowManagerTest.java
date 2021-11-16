@@ -88,8 +88,7 @@ public class ReactorFlowManagerTest {
     }
 
     @Test
-    public void
-    shouldReturnTheNextFailureTransition() {
+    public void shouldReturnTheNextFailureTransition() {
         InstanceGroupAdjustmentV4Request instanceGroupAdjustment = new InstanceGroupAdjustmentV4Request();
         HostGroupAdjustmentV4Request hostGroupAdjustment = new HostGroupAdjustmentV4Request();
         Map<String, Set<Long>> instanceIdsByHostgroup = new HashMap<>();
@@ -127,7 +126,7 @@ public class ReactorFlowManagerTest {
         underTest.triggerMaintenanceModeValidationFlow(STACK_ID);
         underTest.triggerClusterCertificationRenewal(STACK_ID);
         underTest.triggerDatalakeClusterUpgrade(STACK_ID, "asdf");
-        underTest.triggerDistroXUpgrade(STACK_ID, imageChangeDto, false, false);
+        underTest.triggerDistroXUpgrade(STACK_ID, imageChangeDto, false, false, "variant");
         underTest.triggerSaltUpdate(STACK_ID);
         underTest.triggerPillarConfigurationUpdate(STACK_ID);
         underTest.triggerDatalakeDatabaseBackup(STACK_ID, null, null, true);
